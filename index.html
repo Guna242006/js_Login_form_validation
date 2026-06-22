@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!--FireBase SDK-->
+    <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 
 <body>
@@ -23,7 +27,7 @@
                 </div>
                 <div class="flex flex-col">
                     <label class="text-xl ">Password :</label>
-                    <input type="text" name="password " placeholder="Enter your password..." id="pass"
+                    <input type="password" name="password " placeholder="Enter your password..." id="pass"
                         class="border-2  outline-none rounded-md pl-1 py-2">
                     <p class="text-md text-red-500" id="passError"></p>
                 </div>
@@ -31,49 +35,107 @@
                     <button type="submit" id="subbtn"
                         class="w-full py-3 bg-green-600 text-white rounded-md">Submit</button>
                 </div>
+
+                <div class="w-100 bg-white h-50 hidden" id="popup">
+                    <h1>Login Form Subitted Successfully!</h1>
+
+                </div>
             </form>
         </div>
     </div>
 </body>
 
 <script>
-    let form = document.getElementById("form")
-    let email = document.getElementById("email")
-    let pass = document.getElementById("pass")
+    let form = document.getElementById("form");
+    let email = document.getElementById("email");
+    let pass = document.getElementById("pass");
 
     form.addEventListener("submit", (e) => {
-        e.preventDefault()
-        regexvalid(email.value, pass.value)
-    })
+        e.preventDefault();
+        const valid_data = regexvalid(email.value, pass.value);
+        if (valid_data) {
+            setdata(email.value, pass.value);
+        }
 
+    });
+
+    email.addEventListener("input", (e) => {
+        const emailregex = /^\S+@\S+\.\S+$/;
+        if (e.target.value == "") {
+            emailError.textContent = "Email is Required!";
+        } else if (!e.target.value.match(emailregex)) {
+            emailError.textContent = " Invalid email format";
+        } else {
+            emailError.textContent = ""
+        }
+    });
+
+    pass.addEventListener("input", (e) => {
+
+        const passregex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+        const uppercase = /(?=.*?[A-Z])/;
+        const lowercase = /(?=.*?[a-z])/;
+        const numbers = /(?=.*?[0-9])/;
+        const specialchr = /(?=.*?[#?!@$%^&*-])/;
+
+        if (!e.target.value.match(uppercase)) {
+            passError.textContent = "Must contain one uppercase";
+        } else if (!e.target.value.match(lowercase)) {
+            passError.textContent = "Must contain one lowercase";
+        }
+        else if (!e.target.value.match(numbers)) {
+            passError.textContent = "Must contain one numbers";
+        } else if (!e.target.value.match(specialchr)) {
+            passError.textContent = "Must be one special char"
+        }
+        else {
+            passError.textContent = "";
+        }
+    })
     const regexvalid = (email, pass) => {
+        let data = true;
 
         const emailregex = /^\S+@\S+\.\S+$/;
         const passregex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
         const emailError = document.getElementById("emailError");
         const paasError = document.getElementById("paasError");
 
-
         if (email.match(emailregex)) {
             emailError.textContent = "";
         } else {
             emailError.textContent = "Invalid Email..."
+            data = false;
         }
         if (pass.match(passregex)) {
             passError.textContent = "";
         } else {
             passError.textContent = "password minimum 8 characters in length "
+            data = false;
         }
-        
-        if (email.match(emailregex) && pass.match(passregex)) {
-            alert("Login form Submitted")
-            document.getElementById("email").value = "";
-            document.getElementById("pass").value = "";
+        return data
 
-            document.getElementById("emailError").textContent = "";
-            document.getElementById("passError").textContent = "";
-        }
     }
+    const setdata = (email, pass) => {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxLawCGe6Xzc45dvDtJ0oDUWMXtDsP7QY",
+            authDomain: "loginform-229f2.firebaseapp.com",
+            databaseURL: "https://loginform-229f2-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "loginform-229f2",
+            storageBucket: "loginform-229f2.firebasestorage.app",
+            messagingSenderId: "547152895626",
+            appId: "1:547152895626:web:e1d178df63879ab2361773"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.database().ref("ReqForm");
+
+        db.push({
+            email: email,
+            password: pass,
+        });
+    }
+
 </script>
 
 </html>
